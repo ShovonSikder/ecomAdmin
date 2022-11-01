@@ -1,3 +1,8 @@
+const String collectionCategory = 'categories';
+const String categoryFieldCategoryId = 'categoryId';
+const String categoryFieldCategoryName = 'categoryName';
+const String categoryFieldProductCount = 'productCount';
+
 class CategoryModel {
   String? categoryId;
   String categoryName;
@@ -9,5 +14,16 @@ class CategoryModel {
     required this.productCount,
   });
 
-//TODO: implement map key constants,toMap, fromMap
+//: implement map key constants,toMap, fromMap
+  Map<String, dynamic> toMap() => <String, dynamic>{
+        categoryFieldCategoryId: categoryId,
+        categoryFieldCategoryName: categoryName,
+        categoryFieldProductCount: productCount,
+      };
+
+  factory CategoryModel.fromMap(Map<String, dynamic> map) => CategoryModel(
+        categoryId: map[categoryFieldCategoryId],
+        categoryName: map[categoryFieldCategoryName],
+        productCount: map[categoryFieldProductCount],
+      );
 }
