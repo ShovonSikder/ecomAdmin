@@ -39,8 +39,7 @@ class UserModel {
   Map<String, dynamic> toMap() => <String, dynamic>{
         userFieldUserId: userId,
         userFieldDisplayName: displayName,
-        userFieldAddressModel:
-            addressModel != null ? addressModel!.toMap() : null,
+        userFieldAddressModel: addressModel?.toMap(),
         userFieldUserCreationTime: userCreationTime,
         userFieldUserImageUrl: userImageUrl,
         userFieldGender: gender,
@@ -51,7 +50,9 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> map) => UserModel(
         userId: map[userFieldUserId],
-        addressModel: AddressModel.fromMap(map[userFieldAddressModel]),
+        addressModel: map[userFieldAddressModel] != null
+            ? AddressModel.fromMap(map[userFieldAddressModel])
+            : null,
         age: map[userFieldAge],
         displayName: map[userFieldDisplayName],
         gender: map[userFieldGender],

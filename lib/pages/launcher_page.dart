@@ -1,4 +1,9 @@
+import 'package:ecom_admin/auth/auth_service.dart';
+import 'package:ecom_admin/pages/dashboard_page.dart';
+import 'package:ecom_admin/pages/login_page.dart';
 import 'package:flutter/material.dart';
+
+import '../utils/color_constants.dart';
 
 class LauncherPage extends StatelessWidget {
   static const String routeName = '/';
@@ -6,6 +11,20 @@ class LauncherPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    Future.delayed(Duration.zero, () {
+      if (AuthService.currentUser != null) {
+        Navigator.pushReplacementNamed(context, DashBoardPage.routeName);
+      } else {
+        Navigator.pushReplacementNamed(context, LoginPage.routeName);
+      }
+    });
+
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(
+          color: progressIndicatorColor,
+        ),
+      ),
+    );
   }
 }

@@ -9,9 +9,9 @@ class CategoryModel {
   num productCount;
 
   CategoryModel({
-    required this.categoryId,
+    this.categoryId,
     required this.categoryName,
-    required this.productCount,
+    this.productCount = 0,
   });
 
 //: implement map key constants,toMap, fromMap
@@ -26,4 +26,14 @@ class CategoryModel {
         categoryName: map[categoryFieldCategoryName],
         productCount: map[categoryFieldProductCount],
       );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CategoryModel &&
+          runtimeType == other.runtimeType &&
+          categoryId == other.categoryId;
+
+  @override
+  int get hashCode => categoryId.hashCode;
 }

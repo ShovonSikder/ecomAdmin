@@ -1,3 +1,5 @@
+import 'package:ecom_admin/models/category_model.dart';
+
 const String collectionProduct = 'products';
 const String productFieldId = 'productId';
 const String productFieldName = 'productName';
@@ -6,6 +8,7 @@ const String productFieldShortDescription = 'shortDescription';
 const String productFieldLongDescription = 'longDescription';
 const String productFieldSalePrice = 'salePrice';
 const String productFieldStock = 'stock';
+const String productFieldAvgRating = 'avgRating';
 const String productFieldProductDiscount = 'productDiscount';
 const String productFieldThumbnailImageUrl = 'thumbnailImageUrl';
 const String productFieldAdditionalImages = 'additionalImage';
@@ -15,11 +18,12 @@ const String productFieldFeatured = 'featured';
 class ProductModel {
   String? productId;
   String productName;
-  String category;
+  CategoryModel category;
   String? shortDescription;
   String? longDescription;
   num salePrice;
   num stock;
+  num avgRating;
   num productDiscount;
   String thumbnailImageUrl;
   List<String>? additionalImages;
@@ -34,10 +38,11 @@ class ProductModel {
     this.longDescription,
     required this.salePrice,
     required this.stock,
+    this.avgRating = 0.0,
     this.productDiscount = 0,
     required this.thumbnailImageUrl,
     this.additionalImages,
-    required this.available,
+    this.available = true,
     this.featured = false,
   });
 
@@ -45,11 +50,12 @@ class ProductModel {
     return <String, dynamic>{
       productFieldId: productId,
       productFieldName: productName,
-      productFieldCategory: category,
+      productFieldCategory: category.toMap(),
       productFieldShortDescription: shortDescription,
       productFieldLongDescription: longDescription,
       productFieldSalePrice: salePrice,
       productFieldStock: stock,
+      productFieldAvgRating: avgRating,
       productFieldProductDiscount: productDiscount,
       productFieldThumbnailImageUrl: thumbnailImageUrl,
       productFieldAdditionalImages: additionalImages,
@@ -61,9 +67,10 @@ class ProductModel {
   factory ProductModel.fromMap(Map<String, dynamic> map) => ProductModel(
         productId: map[productFieldId],
         productName: map[productFieldName],
-        category: map[productFieldCategory],
+        category: CategoryModel.fromMap(map[productFieldCategory]),
         salePrice: map[productFieldSalePrice],
         stock: map[productFieldStock],
+        avgRating: map[productFieldAvgRating],
         thumbnailImageUrl: map[productFieldThumbnailImageUrl],
         available: map[productFieldAvailable],
         additionalImages: map[productFieldAdditionalImages] != null
