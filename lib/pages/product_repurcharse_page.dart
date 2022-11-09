@@ -1,10 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecom_admin/models/product_model.dart';
+import 'package:ecom_admin/providers/product_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:provider/provider.dart';
 
+import '../models/date_model.dart';
+import '../models/purchase_model.dart';
 import '../utils/helper_functions.dart';
 
 class ProductRepurchasePage extends StatefulWidget {
-  static const String routeName = '/product_repurchase';
+  static const String routeName = '/repurchase';
   const ProductRepurchasePage({Key? key}) : super(key: key);
 
   @override
@@ -12,24 +18,13 @@ class ProductRepurchasePage extends StatefulWidget {
 }
 
 class _ProductRepurchasePageState extends State<ProductRepurchasePage> {
-  late ProductModel productModel;
-  final _formKey = GlobalKey<FormState>();
-
-  final _purchasePriceController = TextEditingController();
   final _quantityController = TextEditingController();
+  final _purchasePriceController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   DateTime? purchaseDate;
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    _purchasePriceController.dispose();
-    _quantityController.dispose();
-    super.dispose();
-  }
-
+  late ProductModel productModel;
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     productModel = ModalRoute.of(context)!.settings.arguments as ProductModel;
     super.didChangeDependencies();
   }
@@ -38,58 +33,93 @@ class _ProductRepurchasePageState extends State<ProductRepurchasePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Repurchase'),
+        title: const Text('Re-Purchase'),
       ),
       body: Center(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Text(
-                productModel.productName,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: _quantityController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Quantity',
-                  prefixIcon: Icon(Icons.production_quantity_limits),
-                  filled: true,
+        child: Card(
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(24),
+              children: [
+                Text(
+                  productModel.productName,
+                  style: Theme.of(context).textTheme.headline5,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'This field must not empty';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Card(
-                child: Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton.icon(
-                        onPressed: _selectDate,
-                        icon: const Icon(Icons.calendar_month),
-                        label: const Text('Select Purchase Date'),
-                      ),
-                      Text(purchaseDate == null
-                          ? 'No Date chosen'
-                          : getFormattedDate(purchaseDate!)),
-                    ],
+                const Divider(
+                  height: 2,
+                  color: Colors.grey,
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: _purchasePriceController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      filled: true,
+                      labelText: 'Enter Purchase Price',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'This field must not be empty';
+                      }
+                      if (num.parse(value) <= 0) {
+                        return 'Price should be greater than 0';
+                      }
+                      return null;
+                    },
                   ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: _quantityController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      filled: true,
+                      labelText: 'Enter Quantity',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'This field must not be empty';
+                      }
+                      if (num.parse(value) <= 0) {
+                        return 'Quantity should be greater than 0';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          onPressed: _selectDate,
+                          icon: const Icon(Icons.calendar_month),
+                          label: const Text('Select Purchase Date'),
+                        ),
+                        Text(purchaseDate == null
+                            ? 'No date chosen'
+                            : getFormattedDate(purchaseDate!)),
+                      ],
+                    ),
+                  ),
+                ),
+                OutlinedButton(
+                  onPressed: _repurchase,
+                  child: const Text('Re-purchase'),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -97,15 +127,45 @@ class _ProductRepurchasePageState extends State<ProductRepurchasePage> {
   }
 
   void _selectDate() async {
-    final _date = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(DateTime.now().year - 1),
-        lastDate: DateTime.now());
-
-    if (_date != null) {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(DateTime.now().year - 1),
+      lastDate: DateTime.now(),
+    );
+    if (date != null) {
       setState(() {
-        purchaseDate = _date;
+        purchaseDate = date;
+      });
+    }
+  }
+
+  void _repurchase() {
+    if (_formKey.currentState!.validate()) {
+      if (purchaseDate == null) {
+        showMsg(context, 'Please select a purchase date');
+        return;
+      }
+      EasyLoading.show(status: 'Please wait');
+      final purchaseModel = PurchaseModel(
+        productId: productModel.productId,
+        purchaseQuantity: num.parse(_quantityController.text),
+        purchasePrice: num.parse(_purchasePriceController.text),
+        dateModel: DateModel(
+          timestamp: Timestamp.fromDate(purchaseDate!),
+          day: purchaseDate!.day,
+          month: purchaseDate!.month,
+          year: purchaseDate!.year,
+        ),
+      );
+      Provider.of<ProductProvider>(context, listen: false)
+          .repurchase(purchaseModel, productModel)
+          .then((value) {
+        EasyLoading.dismiss();
+        Navigator.pop(context);
+      }).catchError((error) {
+        EasyLoading.dismiss();
+        showMsg(context, 'Failed to save');
       });
     }
   }

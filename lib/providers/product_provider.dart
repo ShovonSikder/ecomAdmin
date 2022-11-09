@@ -48,6 +48,11 @@ class ProductProvider extends ChangeNotifier {
     });
   }
 
+  Future<void> repurchase(
+      PurchaseModel purchaseModel, ProductModel productModel) {
+    return DbHelper.repurchase(purchaseModel, productModel);
+  }
+
   Future<List<PurchaseModel>> getAllPurchaseByProductId(
       String productId) async {
     final snapshot = await DbHelper.getAllPurchaseByProductId(productId);
@@ -71,5 +76,10 @@ class ProductProvider extends ChangeNotifier {
 
   Future<void> deleteImage(String downloadUrl) {
     return FirebaseStorage.instance.refFromURL(downloadUrl).delete();
+  }
+
+  Future<void> updateProductField(
+      String productId, String field, dynamic value) {
+    return DbHelper.updateProductField(productId, {field: value});
   }
 }

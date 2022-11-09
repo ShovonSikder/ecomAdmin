@@ -1,4 +1,5 @@
-const String collectionOrderConstant = 'orderConstant';
+const String collectionUtils = 'utils';
+const String documentOrderConstants = 'orderConstants';
 const String orderConstantFieldDiscount = 'discount';
 const String orderConstantFieldVat = 'vat';
 const String orderConstantFieldDeliveryCharge = 'deliveryCharge';
@@ -9,9 +10,9 @@ class OrderConstantModel {
   num deliveryCharge;
 
   OrderConstantModel({
-    required this.discount,
-    required this.vat,
-    required this.deliveryCharge,
+    this.discount = 0,
+    this.vat = 0,
+    this.deliveryCharge = 0,
   });
 
 //: implement map key constants,toMap, fromMap

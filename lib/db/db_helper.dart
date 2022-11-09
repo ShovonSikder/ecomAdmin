@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecom_admin/models/category_model.dart';
+import 'package:ecom_admin/models/order_constant_model.dart';
 import 'package:ecom_admin/models/product_model.dart';
 import 'package:ecom_admin/models/purchase_model.dart';
 
@@ -43,6 +44,9 @@ class DbHelper {
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllProducts() =>
       _db.collection(collectionProduct).snapshots();
 
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> getOrderConstants() =>
+      _db.collection(collectionUtils).doc(documentOrderConstants).snapshots();
+
   static Future<QuerySnapshot<Map<String, dynamic>>> getAllPurchaseByProductId(
           String productId) =>
       _db
@@ -57,4 +61,42 @@ class DbHelper {
           .where('$productFieldCategory.$categoryFieldCategoryId',
               isEqualTo: categoryModel.categoryId)
           .snapshots();
+
+  static Future<void> updateProductField(
+      String productId, Map<String, dynamic> map) {
+    return _db.collection(collectionProduct).doc(productId).update(map);
+  }
+
+  static Future<void> repurchase(
+      PurchaseModel purchaseModel, ProductModel productModel) async {
+    final wb = _db.batch();
+    final purDoc = _db.collection(collectionPurchase).doc();
+    purchaseModel.purchaseId = purDoc.id;
+    wb.set(purDoc, purchaseModel.toMap());
+    final proDoc =
+        _db.collection(collectionProduct).doc(productModel.productId);
+    wb.update(proDoc, {
+      productFieldStock: (productModel.stock + purchaseModel.purchaseQuantity)
+    });
+    final snapshot = await _db
+        .collection(collectionCategory)
+        .doc(productModel.category.categoryId)
+        .get();
+    final prevCount = snapshot.data()![categoryFieldProductCount];
+    final catDoc = _db
+        .collection(collectionCategory)
+        .doc(productModel.category.categoryId);
+    wb.update(catDoc, {
+      categoryFieldProductCount: (prevCount + purchaseModel.purchaseQuantity)
+    });
+    return wb.commit();
+  }
+
+  static Future<void> updateOrderConstant(
+      OrderConstantModel orderConstantModel) {
+    return _db
+        .collection(collectionUtils)
+        .doc(documentOrderConstants)
+        .update(orderConstantModel.toMap());
+  }
 }
