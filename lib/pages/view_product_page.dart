@@ -67,9 +67,9 @@ class _ViewProductPageState extends State<ViewProductPage> {
                           leading: CachedNetworkImage(
                             width: 75,
                             imageUrl: productModel.thumbnailImageUrl,
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(
+                            placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => const Icon(
                               Icons.error,
                               color: Colors.red,
                             ),
